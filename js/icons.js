@@ -45,6 +45,17 @@ const P = {
   rec: '<circle cx="12" cy="12" r="5" fill="currentColor"/>',
   install: '<rect x="6" y="3" width="12" height="18" rx="3"/><path d="M12 8v6M9.5 12l2.5 2.5 2.5-2.5"/>',
   cube: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',
+  cursor: '<path d="M5 3l14 7-6 2-2 6z"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',
+  door: '<path d="M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17"/><path d="M4 21h16"/><circle cx="15" cy="12.5" r=".8" fill="currentColor"/>',
+  undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+  redo: '<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>',
+  fit: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  room: '<rect x="4" y="5" width="16" height="14" rx="1"/><path d="M4 12h9M13 5v14" />',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  rotl: '<path d="M4 4v6h6"/><path d="M4.5 10A8 8 0 1 1 6 17"/>',
+  rotr: '<path d="M20 4v6h-6"/><path d="M19.5 10A8 8 0 1 0 18 17"/>',
+  path: '<path d="M3 20c4-1 4-7 9-8s5-6 9-8"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
 };
 

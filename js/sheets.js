@@ -463,7 +463,8 @@ export function createSheets(ctx) {
       id: 'menu', dock: false,
       render: () => `${head('Réglages', 'Menu')}
         <div class="list">
-          <a class="row" href="editor.html" style="text-decoration:none;color:inherit"><div class="ri">${icon('editor', 19)}</div><div class="rt"><b>Éditeur de plan 3D</b><small>Dessiner murs, pièces, mobilier, jardin (base existante)</small></div>${icon('chev', 16)}</a>
+          <div class="row" data-act="edit-plan" role="button"><div class="ri">${icon('edit', 19)}</div><div class="rt"><b>Éditer le plan de la maison</b><small>Pièces, murs, portes, meubles — rendu 3D en direct</small></div>${icon('chev', 16)}</div>
+          <a class="row" href="editor.html" style="text-decoration:none;color:inherit"><div class="ri">${icon('editor', 19)}</div><div class="rt"><b>Éditeur 3D avancé (ancien)</b><small>HomeKit 3D Studio : BIM, étages, modèles T2/T3/T4</small></div>${icon('chev', 16)}</a>
           ${canInstall ? `<div class="row" data-act="install" role="button"><div class="ri">${icon('install', 19)}</div><div class="rt"><b>Installer l’application</b><small>Ajouter à l’écran d’accueil</small></div>${icon('chev', 16)}</div>` : ''}
           ${ios ? `<div class="row"><div class="ri">${icon('install', 19)}</div><div class="rt"><b>Installer sur iPhone</b><small>Partager → « Sur l’écran d’accueil »</small></div></div>` : ''}
         </div>
@@ -481,6 +482,7 @@ export function createSheets(ctx) {
       inputs: { price: (v) => { const n = parseFloat(v); if (n >= 0) store.setSetting('energyPrice', n); } },
       actions: {
         close: () => sheets.close(),
+        'edit-plan': () => { sheets.close(); ctx.openEditor(); },
         gfx: (el) => { store.setSetting('graphics', el.dataset.v); ctx.applyGraphics(); sheets.rerender(true); },
         sim: () => { store.setSetting('simulateEvents', !S().settings.simulateEvents); sheets.rerender(true); },
         install: () => ctx.doInstall(),

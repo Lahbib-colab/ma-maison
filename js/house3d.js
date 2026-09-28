@@ -158,8 +158,17 @@ export class House3D extends StageBase {
   }
 
   // ---- (re)construction à partir des données --------------------------------
+  fitHome() {
+    const all = this.store.state.rooms, rs = all.filter((r) => r.id !== 'jardin'), use = rs.length ? rs : all;
+    let x1 = 1e9, z1 = 1e9, x2 = -1e9, z2 = -1e9;
+    use.forEach((r) => { x1 = Math.min(x1, r.rect[0]); z1 = Math.min(z1, r.rect[1]); x2 = Math.max(x2, r.rect[2]); z2 = Math.max(z2, r.rect[3]); });
+    if (x1 > x2) { x1 = 0; z1 = 0; x2 = 10; z2 = 10; }
+    this.bw = Math.max(8, x2 - x1 + 4); this.bd = Math.max(8, z2 - z1 + 4); // construction + 2 m de marge
+    this.cam.home.target = [(x1 + x2) / 2, 0, (z1 + z2) / 2];
+  }
   build() {
     const st = this.store.state, view = this.view;
+    this.fitHome();
     const w = buildHouse(st);
     this.world = w;
     view.setStatic(w.mb);
@@ -268,15 +277,18 @@ export class House3D extends StageBase {
     this.view.resize(this.w, this.h, dpr);
     // cadrage : la maison doit tenir en largeur quelle que soit la forme du bloc
     const aspect = this.w / this.h;
-    this.cam.home.dist = Math.min(78, Math.max(24, 41 / Math.min(1.1, aspect * 1.05)));
-    if (!this.selId && !this.cam.tw && !this.userMoved) this.cam.reset(false);
+    const az = this.cam.home.az, pw = (this.bw || 18.8) * Math.cos(az) + (this.bd || 17.4) * Math.sin(az);
+    const ph = ((this.bw || 18.8) * Math.sin(az) + (this.bd || 17.4) * Math.cos(az)) * Math.sin(this.cam.home.el) + 3;
+    const k = 2 * Math.tan(this.cam.fov / 2);
+    this.cam.home.dist = Math.min(120, Math.max(14, Math.max((0.9 * pw) / (k * Math.min(1.2, aspect)), (0.95 * ph) / k)));
+    if (!this.selId && !this.userMoved) { this.cam.tw = null; this.cam.reset(false); }
     this.pillOffset = this.w < 420 ? 30 : 50;
     this.dirty = true; this.overlayDirty = true;
     if (this.pills.length) requestAnimationFrame(() => { this.pills.forEach((p) => { p.pw = p.el.offsetWidth; p.ph = p.el.offsetHeight; }); this.overlayDirty = true; this.dirty = true; });
   }
 
   // ---- projection pour les surcouches ------------------------------------------
-  anchorOf(room) { const l = room.label; const p = this.cam.project(l, this.w, this.h); return p; }
+  anchorOf(room) { const [x1, z1, x2, z2] = room.rect; return this.cam.project([(x1 + x2) / 2, room.outdoor ? 0.3 : 1.2, (z1 + z2) / 2], this.w, this.h); }
   markerPos(d) { return this.cam.project(d.pos, this.w, this.h); }
 
   // ---- API interface ----------------------------------------------------------------
@@ -299,7 +311,7 @@ export class House3D extends StageBase {
   }
   resetView() { this.userMoved = false; this.cam.reset(true); this.dirty = true; }
   refresh() { super.refresh(); this.dirty = true; }
-  rebuild() { this.build(); this.select(this.selId); }
+  rebuild() { this.build(); this.resize(); if (this.selId && !this.store.room(this.selId)) this.select(null); }
 
   // ---- gestes : rotation / pinch / déplacement / tap ------------------------------
   bindGestures() {

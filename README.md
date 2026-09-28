@@ -11,6 +11,16 @@ Servir le dossier en HTTP(S) (le service worker exige HTTPS ou localhost) :
 iPhone : Safari → Partager → « Sur l’écran d’accueil ». Android/Desktop : Menu ⋯ → « Installer l’application ».
 **Ouvrez l’app une fois en ligne** : le service worker met alors tout en cache (dont Three.js pour l’éditeur).
 
+## Éditeur de plan (nouveau)
+**Menu ⋯ → Éditer le plan de la maison** (ou le bouton ✎ sur la maison 3D). Le plan 2D se modifie en bas, la maison 3D se met à jour **en direct** au-dessus.
+- **Pièce** : glisser pour tracer ; les bords s'alignent sur les pièces voisines (le mur mitoyen est créé tout seul). Déplacer, redimensionner (8 poignées) ou saisir les **cotes exactes** en mètres. Sol, icône, résumé affiché.
+- **Porte / fenêtre** : toucher un mur ; portes, porte d'entrée, fenêtres (volet roulant motorisé en option), baie vitrée, porte de garage. Glisser pour les déplacer le long du mur, régler largeur/hauteur/allège.
+- **Meuble** : bibliothèque de 27 éléments ; rotation, duplication ; lampadaires/chevets/bornes créent une **lumière pilotable**.
+- **Sol ext.** : allées, terrasses, parking. **Appareils** : glisser pour placer lumières, capteurs, caméras.
+- **Fond** : importer une photo/plan de votre vraie maison, régler sa largeur réelle, tracer par-dessus.
+- **Modèles** : plan vide, T2 meublé, villa ; **Équiper les pièces** ajoute lumière + thermostat ; annuler/rétablir illimité (60 pas) ; tout est sauvegardé et exportable.
+Limites : un seul niveau, pièces rectangulaires (une pièce en L = 2 rectangles), une seule piscine affichée.
+
 ## Structure
 | Fichier | Rôle |
 |---|---|
@@ -18,13 +28,14 @@ iPhone : Safari → Partager → « Sur l’écran d’accueil ». Android/Deskt
 | `js/catalog.js` | Comportement par type d’appareil (états par défaut, puissance, résumé). |
 | `js/store.js` | État, persistance (localStorage), actions, scénarios, moteur d’automatisations, énergie. |
 | `js/drivers.js` | **Couche appareils** : `SimulatedDriver` (thermique, garage, détecteurs…) — à remplacer. |
+| `js/plan.js`, `js/editor.js` | Opérations sur le plan (testables) et éditeur visuel 2D + aperçu 3D. |
 | `js/world.js` | Construit la 3D **à partir des données** (murs déduits des pièces, ouvertures, mobilier). |
 | `js/gl.js` | Moteur WebGL2 : éclairage nocturne, halos, murs « maison de poupée », caméra orbitale. |
 | `js/house3d.js` | Contrôleur 3D (gestes, pastilles, repères, qualité adaptative) + repli **Plan 2D**. |
 | `js/views.js`, `js/sheets.js`, `js/dom.js`, `js/app.js` | Interface : onglets, feuilles de contrôle, éditeurs, démarrage. |
 | `js/cams.js` | Flux caméra **simulés** (canvas). |
 | `service-worker.js`, `manifest.json`, `icons/` | PWA : cache hors ligne, installation, icônes, écrans de démarrage iPhone/iPad. |
-| `tests/` | `node tests/store.test.mjs` (logique), `node tests/world.test.mjs` (géométrie). |
+| `tests/` | `node tests/store.test.mjs` (logique), `node tests/world.test.mjs` (géométrie), `node tests/plan.test.mjs` (éditeur/modèles). |
 
 ## Modifier les données
 Tout se modifie dans l’app (renommer pièce/appareil, ajouter/supprimer un appareil, créer scénarios et

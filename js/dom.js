@@ -28,7 +28,7 @@ export function makeLive(store) {
     cost: () => (store.energyToday() * store.state.settings.energyPrice).toFixed(2).replace('.', ','),
     temp: (a) => { const t = store.roomTemp(a); return t == null ? '—' : fmtTemp(t); },
     hum: (a) => { const d = store.devicesIn(a).find((x) => x.type === 'temp'); return d ? `${Math.round(d.state.humidity)} %` : '—'; },
-    roomsum: (a) => store.roomSummary(store.room(a)).text,
+    roomsum: (a) => { const r = store.room(a); return r ? store.roomSummary(r).text : ''; },
     sum: (a) => { const d = store.device(a); return d ? DEVICE_TYPES[d.type].summary(d.state, d.props) : ''; },
     cur: (a) => { const d = store.device(a); return d ? fmtTemp(d.state.current) : ''; },
     poolt: (a) => { const d = store.device(a); return d ? fmtTemp(d.state.temperature) : ''; },
@@ -40,7 +40,7 @@ export function makeLive(store) {
     root.querySelectorAll('[data-live]').forEach((el) => {
       const [k, a] = el.dataset.live.split(':');
       const fn = LIVE[k]; if (!fn) return;
-      const v = fn(a);
+      let v = ''; try { v = fn(a); } catch (e) { v = ''; }
       if (el.textContent !== v) { el.textContent = v; if (el.dataset.flash !== undefined) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } }
     });
   };

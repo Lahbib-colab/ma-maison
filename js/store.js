@@ -38,6 +38,8 @@ export function createStore({ driver = null, storage = (typeof localStorage !== 
       d.state = { ...(t ? t.defaults() : {}), ...d.state };
       d.props = d.props || {};
     });
+    data.layout = data.layout || defaultHouse().layout;
+    if (!data.layout.ground) data.layout.ground = defaultHouse().layout.ground;
     data.ui = data.ui || { tab: 'home' };
     data.settings = { energyPrice: 0.2516, graphics: 'auto', simulateEvents: false, ...(data.settings || {}) };
     data.energy = data.energy || seedEnergy(clock());
@@ -218,6 +220,7 @@ export function createStore({ driver = null, storage = (typeof localStorage !== 
     };
   }
   function roomSummary(r) {
+    if (!r) return { text: '', tone: 'ok' };
     const ds = devicesIn(r.id);
     switch (r.primary) {
       case 'light': {
@@ -309,6 +312,12 @@ export function createStore({ driver = null, storage = (typeof localStorage !== 
     if (data.version !== SCHEMA_VERSION) throw new Error(`Version de données ${data.version} non supportée (attendue : ${SCHEMA_VERSION}).`);
     S = normalize(data); flushSave(); emit('change', 'all');
   }
+  // Remplace le plan (pièces, décor, appareils) — utilisé par l'éditeur (annuler/rétablir, modèles)
+  function replacePlan(p, what = 'rooms') {
+    S.rooms = p.rooms; S.layout = p.layout; S.devices = p.devices; normalize(S);
+    flushSave(); emit('change', what);
+  }
+  function planChanged(what = 'rooms') { flushSave(); emit('change', what); }
   function reset() { S = normalize(defaultHouse()); flushSave(); emit('change', 'all'); }
 
   load();
@@ -320,6 +329,6 @@ export function createStore({ driver = null, storage = (typeof localStorage !== 
     upsertAutomation, deleteAutomation, toggleAutomation, runAutomation,
     addDevice, removeDevice, renameDevice, renameRoom, setSetting, setUi,
     metrics, roomSummary, roomTemp, roomPower, powerW, energyBreakdown, energyToday,
-    tick, save: flushSave, exportData, importData, reset,
+    tick, save: flushSave, exportData, importData, reset, replacePlan, planChanged,
   };
 }

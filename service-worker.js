@@ -1,11 +1,11 @@
 // Service worker : précache de l'application (hors ligne complet) + cache
 // d'exécution des bibliothèques CDN de l'éditeur de plan (Three.js).
-const VERSION = 'v1.0.0';
+const VERSION = 'v1.1.0';
 const CACHE = `ma-maison-${VERSION}`;
 const CORE = [
   './', './index.html', './editor.html', './manifest.json', './css/app.css',
   './js/app.js', './js/catalog.js', './js/cams.js', './js/data.js', './js/dom.js', './js/drivers.js', './js/gl.js',
-  './js/house3d.js', './js/icons.js', './js/sheets.js', './js/store.js', './js/views.js', './js/world.js',
+  './js/house3d.js', './js/plan.js', './js/editor.js', './js/icons.js', './js/sheets.js', './js/store.js', './js/views.js', './js/world.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
 ];
 const CDN = [

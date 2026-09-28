@@ -17,6 +17,12 @@ const FLOOR = {
   wood: { c: COL.wood, mat: MAT.WOOD }, tile: { c: COL.tile, mat: MAT.TILE }, concrete: { c: COL.concrete, mat: MAT.CONCRETE },
 };
 const EXT_T = 0.24, INT_T = 0.12, INT_H = 1.7;
+export const GROUND = {
+  stone: { c: COL.stone, mat: MAT.CONCRETE, h: 0.03, label: 'Allée pavée' },
+  driveway: { c: COL.driveway, mat: MAT.CONCRETE, h: 0.03, label: 'Enrobé / béton' },
+  deck: { c: COL.deck, mat: MAT.DECK, h: 0.05, label: 'Terrasse bois' },
+  gravel: { c: '#8b877c', mat: MAT.CONCRETE, h: 0.03, label: 'Gravier' },
+};
 
 export function lightRadius(state, d) {
   const r = state.rooms.find((x) => x.id === d.roomId);
@@ -110,10 +116,10 @@ export function buildHouse(state) {
   } else {
     gBox(G[0], G[1], G[2], G[3], -0.9, 0.9, COL.grass, MAT.GRASS, jardin, true);
   }
-  // allée + terrasse d'accès + garage
-  gBox(7.3, 9.6, 8.7, 13.4, 0, 0.03, COL.stone, MAT.CONCRETE, jardin);
-  gBox(12, 9.6, 16.4, 16.2, 0, 0.03, COL.driveway, MAT.CONCRETE, jardin);
-  gBox(-0.4, 9.6, 4.8, 10.55, 0, 0.05, COL.deck, MAT.DECK, jardin);
+  // sols extérieurs (allées, terrasses…) : données layout.ground + pièces extérieures non aquatiques
+  const groundItems = (layout.ground || []).map((g) => ({ rect: g.rect, kind: g.kind }));
+  rooms.forEach((r) => { if (r.outdoor && r.id !== 'jardin' && r.floor !== 'water' && GROUND[r.floor === 'concrete' ? 'driveway' : r.floor]) groundItems.push({ rect: r.rect, kind: r.floor === 'concrete' ? 'driveway' : r.floor }); });
+  groundItems.forEach((g) => { const k = GROUND[g.kind]; if (k) gBox(g.rect[0], g.rect[1], g.rect[2], g.rect[3], 0, k.h, k.c, k.mat, jardin); });
 
   // planchers des pièces
   rooms.forEach((r) => {
@@ -322,6 +328,13 @@ const FURN = {
   toilet(mb) {
     B(mb, 0, 0.06, 0, 0.4, 0.4, 0.55, '#f2f4f7'); B(mb, 0, 0.5, -0.24, 0.42, 0.42, 0.18, '#f2f4f7');
   },
+  bathtub(mb) {
+    B(mb, 0, 0.06, 0, 1.7, 0.55, 0.75, '#f2f4f7'); B(mb, 0, 0.6, 0, 1.5, 0.02, 0.55, '#bcd7e6', { ao: 1 });
+    mb.prism(-0.75, 0.6, 0, 0.03, 0.03, 0.25, 6, '#c9d0d8');
+  },
+  washer(mb) {
+    B(mb, 0, 0.06, 0, 0.6, 0.85, 0.6, '#e9edf1'); mb.attr({ emis: 0.15 }); mb.prism(0, 0.3, 0.31, 0.2, 0.2, 0.02, 14, '#31485f', { ao: 1 }); mb.attr({ emis: 0 });
+  },
   car(mb) {
     // capot vers +z local
     B(mb, 0, 0.32, 0, 1.92, 0.55, 4.5, '#1c2432'); B(mb, 0, 0.87, -0.15, 1.7, 0.5, 2.5, '#1c2432');
@@ -351,3 +364,22 @@ const FURN = {
 };
 
 export function toneRgb(tone) { return (TONES[tone] || TONES.warm).rgb; }
+
+// Catalogue d'édition : libellé, catégorie, emprise au sol (m) pour le plan 2D
+export const FURN_INFO = {
+  sofa: { label: 'Canapé', cat: 'Salon', w: 2.5, d: 1.9, ox: 0, oz: 0.45 }, armchair: { label: 'Fauteuil', cat: 'Salon', w: 0.9, d: 0.85 },
+  coffee: { label: 'Table basse', cat: 'Salon', w: 1.1, d: 0.6 }, tv: { label: 'Meuble TV', cat: 'Salon', w: 1.9, d: 0.42 },
+  shelf: { label: 'Bibliothèque', cat: 'Salon', w: 1.4, d: 0.36 }, rug: { label: 'Tapis', cat: 'Salon', w: 2.4, d: 1.6 },
+  plant: { label: 'Plante', cat: 'Salon', w: 0.5, d: 0.5 }, floorlamp: { label: 'Lampadaire', cat: 'Salon', w: 0.3, d: 0.3, light: { y: 1.7, name: 'Lampadaire', watts: 9 } },
+  counter: { label: 'Plan de travail', cat: 'Cuisine', w: 3, d: 0.65 }, island: { label: 'Îlot', cat: 'Cuisine', w: 2.4, d: 1.0 },
+  fridge: { label: 'Réfrigérateur', cat: 'Cuisine', w: 0.75, d: 0.7 }, table: { label: 'Table à manger', cat: 'Cuisine', w: 1.7, d: 0.9 },
+  chair: { label: 'Chaise', cat: 'Cuisine', w: 0.42, d: 0.42 },
+  bed: { label: 'Lit', cat: 'Chambre', w: 1.75, d: 2.05 }, nightstand: { label: 'Chevet + lampe', cat: 'Chambre', w: 0.44, d: 0.4, light: { y: 1.0, name: 'Lampe de chevet', watts: 6 } },
+  wardrobe: { label: 'Armoire', cat: 'Chambre', w: 1.6, d: 0.6 }, desk: { label: 'Bureau', cat: 'Chambre', w: 1.2, d: 0.6 },
+  shower: { label: 'Douche', cat: 'Salle de bain', w: 1.0, d: 1.0 }, bathtub: { label: 'Baignoire', cat: 'Salle de bain', w: 1.7, d: 0.75 },
+  vanity: { label: 'Vasque', cat: 'Salle de bain', w: 1.2, d: 0.5 }, toilet: { label: 'WC', cat: 'Salle de bain', w: 0.4, d: 0.55 },
+  washer: { label: 'Lave-linge', cat: 'Salle de bain', w: 0.6, d: 0.6 },
+  car: { label: 'Voiture', cat: 'Garage', w: 1.92, d: 4.5 }, charger: { label: 'Borne de recharge', cat: 'Garage', w: 0.3, d: 0.12 },
+  tree: { label: 'Arbre', cat: 'Jardin', w: 1.6, d: 1.6 }, bush: { label: 'Buisson', cat: 'Jardin', w: 1.1, d: 1.0 },
+  lounger: { label: 'Transat', cat: 'Jardin', w: 0.7, d: 1.9 }, postlamp: { label: 'Borne lumineuse', cat: 'Jardin', w: 0.2, d: 0.2, light: { y: 0.9, name: 'Borne extérieure', watts: 8 } },
+};

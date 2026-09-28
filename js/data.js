@@ -33,6 +33,11 @@ export function defaultHouse() {
     // --- Décor 3D (modifiable : on peut déplacer/ajouter des éléments) -----
     layout: {
       wallHeight: 2.6,
+      ground: [
+        { rect: [7.3, 9.6, 8.7, 13.4], kind: 'stone' },
+        { rect: [12, 9.6, 16.4, 16.2], kind: 'driveway' },
+        { rect: [-0.4, 9.6, 4.8, 10.55], kind: 'deck' },
+      ],
       openings: [
         { id: 'o-salon-baie', kind: 'glass', x: 2.6, z: 9.6, w: 3.0, h: 2.1, sill: 0, shutter: 'volet-salon' },
         { id: 'o-salon-fen', kind: 'window', x: 5.5, z: 9.6, w: 1.0, h: 1.2, sill: 0.9 },

@@ -9,6 +9,7 @@ import { hdrHTML, quickHTML, roomsPanelHTML, scenesPanelHTML, roomsViewHTML, aut
 import { $, $$, sheets, toast, makeLive } from './dom.js';
 import { icon } from './icons.js';
 import { initFeeds, attachFeed } from './cams.js';
+import { createEditor } from './editor.js';
 
 const driver = new SimulatedDriver();
 const store = createStore({ driver });
@@ -24,10 +25,13 @@ const ctx = {
   confirm: askConfirm,
   refreshAll: () => renderAll(),
   applyGraphics: () => mountStage(),
+  closeSheets: () => sheets.close(),
+  openEditor: () => editor.open(),
   installPrompt: () => ui.installEvt,
   doInstall: async () => { const e = ui.installEvt; if (!e) return; e.prompt(); await e.userChoice; ui.installEvt = null; sheets.close(); },
 };
 const sh = createSheets(ctx);
+const editor = createEditor(ctx);
 const TABS = ['home', 'rooms', 'auto', 'cams', 'energy'];
 
 // ------------------------------------------------------------ squelette
@@ -39,7 +43,7 @@ function buildShell() {
         <header class="hdr" id="hdr"></header>
         <div class="quick" id="quick"></div>
         <div class="stage-wrap"><div class="stage" id="stage"></div>
-          <div class="stage-tools"><button class="round" data-act="reset-view" aria-label="Revenir à la vue initiale">${icon('reset', 18)}</button></div>
+          <div class="stage-tools"><button class="round" data-act="edit-plan" aria-label="Modifier le plan de la maison">${icon('edit', 17)}</button><button class="round" data-act="reset-view" aria-label="Revenir à la vue initiale">${icon('reset', 18)}</button></div>
           <div class="stage-hint" id="stage-hint">Glisser pour tourner · pincer pour zoomer</div></div>
         <section class="panel" id="p-rooms"></section>
         <section class="panel" id="p-scn"></section>
@@ -118,6 +122,7 @@ function onClick(e) {
     case 'room-modal': sh.openRoom(id, { dock: false }); break;
     case 'tab-rooms': setTab('rooms'); break;
     case 'tab-auto': setTab('auto'); break;
+    case 'edit-plan': editor.open(); break;
     case 'reset-view': if (sheets.isOpen()) sheets.close(); else if (ui.house) ui.house.resetView(); break;
     case 'scene':
       if (ui.editScenes) sh.openSceneEditor(id);
@@ -143,7 +148,7 @@ function bind() {
   $('#tabbar').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheets.isOpen()) sheets.close(); });
   window.addEventListener('resize', () => { if (ui.house) ui.house.resize(); });
-  if (window.ResizeObserver) new ResizeObserver(() => { if (ui.house && ui.tab === 'home') ui.house.resize(); }).observe($('#stage'));
+  if (window.ResizeObserver) new ResizeObserver(() => { const st = $('#stage'); if (ui.house && st && st.clientWidth > 0 && st.clientHeight > 0) ui.house.resize(); }).observe($('#stage'));
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ui.installEvt = e; });
   window.addEventListener('appinstalled', () => { ui.installEvt = null; toast('Application installée'); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { store.tick(0.001); scheduleRender(); } else store.save(); });
@@ -155,7 +160,7 @@ function bind() {
   store.on('change', (what) => {
     if (['devices', 'rooms', 'all'].includes(what) && ui.house) ui.house.rebuild();
     if (what === 'all') mountStage();
-    scheduleRender();
+    if (['devices', 'rooms', 'all'].includes(what)) renderAll(); else scheduleRender();
   });
   let n = 0;
   store.on('live', () => {
@@ -181,7 +186,7 @@ function boot() {
   registerSW();
   requestAnimationFrame(() => { const b = $('#boot'); if (b) { b.classList.add('done'); setTimeout(() => b.remove(), 600); } });
   setTimeout(() => { const h = $('#stage-hint'); if (h) h.style.opacity = 0; }, 6000);
-  window.__app = { store, ui, ctx, sheets, setTab, sh };
+  window.__app = { store, ui, ctx, sheets, setTab, sh, editor };
 }
 window.addEventListener('error', (e) => { console.error(e.error || e.message); });
 window.addEventListener('unhandledrejection', (e) => console.error(e.reason));
